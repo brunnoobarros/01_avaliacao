@@ -1,0 +1,422 @@
+---
+title: "Avaliação I"
+author: "Bruno Barros dos Passos"
+date: "</br> 08/05/2021 Estat 2020.1"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+---
+**Questão 01.**
+
+```{r}
+dados_prm <- read_csv("dados/brutos/peixes_rio_madeira.csv")
+
+dados_prm %>% view()
+```
+
+**(a)**
+
+```{r}
+dados_prm %>% 
+  group_by(ordem) %>% 
+  summarise(n = n()) %>% 
+  arrange(n)
+```
+
+
+**(b)**
+Characiformes. 12 observações.
+
+
+**(c)**
+
+```{r}
+dados_prm %>% 
+  distinct(ordem)
+```
+
+```{r}
+dados_prm %>% 
+  filter(ordem == "Não identificado")
+```
+ 
+ 17 peixes não foram identificados na variável ordem.
+
+ 
+ 
+**Questão 02.**
+
+```{r}
+dados_prm %>% 
+  select(ordem , peso_g)
+```
+
+Inicialmente, calculei a média da variável peso, ao perceber que la dentro possui valores desconecidos. Em seguida, calculei dentre os 12 nomes de peixes encontrados na ordem, a variabilidade do peso em relação a média, percebendo que suas médias em cada ordem eram diferentes.
+ 
+```{r}
+dados_prm %>% 
+  summarise(
+    media_peso = mean(peso_g)
+  )
+```
+
+
+
+```{r}
+dados_prm %>% 
+  group_by(ordem) %>% 
+  drop_na() %>% 
+  summarise(mean(peso_g)) 
+```
+
+**(a)** 
+
+O coeficiente de variação é a medida de variabilidade mais adequada para esse caso, já que analisamos que dentro de ordem ao observarmos a variabilidade do peso em relação a média, nos apresenta que suas médias em cada ordem são diferentes.
+
+```{r}
+dados_prm %>% 
+  group_by(ordem) %>% 
+  drop_na() %>% 
+  summarise(sd(peso_g)) 
+```
+
+
+```{r}
+dados_prm %>% 
+  filter(bacia == "Rio Guaporé" & peso_g) %>% 
+  group_by(ordem) %>%
+  summarise(
+    cv = (sd(peso_g)/mean(peso_g)) * 100
+  )
+```
+
+**(b)** 
+A ordem dos peixes do Rio Guaporé que possui a distribuição de peso mais homogênea é a Clupeiformes.
+ 
+
+
+ 
+ **Questão 03.**
+
+```{r}
+dados_prm %>%
+  distinct(habito_alimentar)
+```
+
+```{r}
+dados_prm %>%
+  mutate(
+    sexo_recode = recode(
+      sexo,
+      "Fêmea"   = "Fêmea",
+      "Macho" = "Macho",
+      "Não coletado" = "Não coletado",
+      "fêmea" = "Fêmea"
+    )
+  ) %>%
+  group_by(sexo_recode) %>% 
+  summarise(
+    n = n())
+```
+
+
+**(a)**
+
+```{r}
+(28331 - 21469)
+(6862/28331) * 100
+```
+
+O aumento será de 24.22082% da quantidade de machos para que tenha a mesma quantidade referente às fêmeas.
+
+
+
+**(b)**
+
+```{r}
+dados_prm %>% 
+  mutate(
+    sexo_recode = recode(
+      sexo,
+      "Fêmea"   = "Fêmea",
+      "Macho" = "Macho",
+      "Não coletado" = "Não coletado",
+      "fêmea" = "Fêmea"
+    )
+  ) %>%
+   select(peso_g, sexo_recode) %>% 
+  group_by(sexo_recode) %>% 
+  drop_na() %>% 
+summarise(
+  n = sum(peso_g))
+```
+
+As fêmeas possuim o maior peso.
+
+
+
+
+**Questão 04.**
+
+```{r}
+dados_prm %>% 
+  distinct(habito_alimentar)
+```
+
+```{r}
+dados_prm %>% 
+  mutate(
+    sexo_recode = recode(
+      sexo,
+      "Fêmea"   = "Fêmea",
+      "Macho" = "Macho",
+      "Não coletado" = "Não coletado",
+      "fêmea" = "Fêmea"
+    )
+  ) %>%
+  filter(habito_alimentar == "Carnívoro") %>% 
+  group_by(sexo_recode) %>% 
+summarise(
+  n = n())
+```
+
+São 8552 carnívoros machos.
+
+
+
+ 
+**Questão 05.**
+
+```{r}
+dados_cheque <- read_csv("dados/brutos/contracheque.csv")
+
+dados_cheque %>% 
+  glimpse()
+dados_cheque %>% view()
+```
+
+
+
+
+```{r}
+dados_cheque %>% 
+  select(rendimento_liquido) %>% 
+  arrange(desc(rendimento_liquido))   
+  
+```
+
+O maior rendimento líquido foi 7267672.
+
+
+
+
+**Questão 06.**
+
+
+
+```{r}
+dados_cheque %>% 
+  distinct(cargo)
+```
+
+```{r}
+dados_cheque %>% 
+  filter(rendimento_liquido > 39293.32) %>%
+  count()
+```
+37334 magistrados recebem acima do valor 39293.32.
+
+
+**(a)**
+
+```{r}
+dados_cheque %>% 
+  filter(rendimento_liquido > 100000) %>%
+  count()
+```
+
+1136 magistrados ganham acima de R$100.000,00
+
+
+
+```{r}
+dados_cheque %>% 
+  distinct(tribunal)
+```
+
+**(b)**
+
+```{r}
+dados_cheque%>% 
+  summarise(
+    media_rendimento = mean(rendimento_liquido)
+  )
+```
+
+```{r}
+dados_cheque %>% 
+  group_by(tribunal) %>% 
+  select(rendimento_liquido) %>% 
+  drop_na() %>% 
+  summarise(
+    media_rendimento = mean(rendimento_liquido))
+```
+
+```{r}
+dados_cheque %>% 
+  group_by(tribunal) %>% 
+  select(rendimento_liquido) %>% 
+  drop_na() %>% 
+  summarise(
+    dp_rendimento = sd(rendimento_liquido),
+    dp_rendimento = n()) %>% 
+  arrange(desc(dp_rendimento)) %>% view()
+```
+
+
+```{r}
+dados_cheque %>% 
+  group_by(tribunal) %>% 
+  select(rendimento_liquido) %>% 
+  drop_na() %>% 
+  summarise(
+    cv = (sd(rendimento_liquido)/mean(rendimento_liquido)) * 100) %>% view()
+```
+```{r}
+dados_cheque %>% 
+  group_by(tribunal) %>% 
+  select(rendimento_liquido) %>% 
+  drop_na() %>% 
+  summarise(
+    cv_rendimento = (sd(rendimento_liquido)/mean(rendimento_liquido)) * 100) %>%  
+arrange(desc(cv_rendimento)) %>% view()
+```
+
+Tribunal Regional do Trabalho da 7ª Região (CE) é o tribunal que possui maior variabilidade.
+
+
+
+**Questão 07.**
+
+```{r}
+dados_prouni <- read_csv("dados/brutos/cursos-prouni.csv")
+
+dados_prouni %>% view()
+```
+
+
+**(a)**
+
+Integral.
+
+```{r}
+dados_prouni %>% 
+  select(nome)
+```
+
+```{r}
+dados_prouni %>% 
+  distinct(nome)
+```
+
+**(b)**
+
+```{r}
+dados_prouni %>% 
+  group_by(turno) %>% 
+  select(nota_integral_ampla) %>% 
+  drop_na() %>% 
+  summarise(
+    media_ampla = mean(nota_integral_ampla))
+```
+
+```{r}
+dados_prouni %>% 
+  group_by(turno) %>% 
+  select(nota_integral_ampla) %>% 
+  drop_na() %>% 
+  summarise(
+    mediana_ampla = median(nota_integral_ampla))
+```
+
+
+A média de integral é 663. E a mediana de integral é 658.
+
+
+
+**(c)**
+
+```{r}
+dados_prouni %>% 
+  group_by(turno) %>% 
+  select(nota_integral_ampla) %>% 
+  drop_na() %>% 
+  summarise(
+    dp_ampla = sd(nota_integral_ampla))
+```
+
+```{r}
+dados_prouni%>% 
+  group_by(turno) %>%
+  select(nota_integral_ampla) %>% 
+  drop_na() %>% 
+  summarise(
+    cv = (sd(nota_integral_ampla)/mean(nota_integral_ampla)) * 100)
+```
+O Curso a Distância é a que possui menor homogeneidade em relação a nota imtegral ampla, pois dentre os turnos é que possui maior porcentagem em relação ao coeviciente de variação.
+
+
+
+**Questão 08.**
+
+```{r}
+dados_prouni %>% 
+  group_by(uf_busca) %>% 
+  summarise(
+    n = n()
+  ) %>% 
+  arrange(desc(n)) 
+```
+
+
+O estadado da Bahia ocupa a 5ª posição.
+
+
+
+**Questão 09.**
+
+```{r}
+dados_prouni %>% 
+  distinct(nome)
+```
+
+Ao analisarmos os dados, usei a distinção para encontrar dentro da variável nome os distintos cursos, então foram identificados 296 distintos cursos na variável nome.
+
+```{r}
+dados_prouni %>% 
+  group_by(nome) %>% 
+  select(curso_busca) %>% 
+  drop_na() %>% 
+  summarise(
+    n = n())
+  
+  
+  
+```
+
+
+**Questão 10.**
+
+Ao observarmos esses gráficos, identificados diferenças em relação aos cursos. Podemos perceber que o curso de Medicina (gráfico em azul) é um gráfico simétrico, já que possui valores muito concentrados no centro, o que faz com que ao calcularmos a média e a mediana seus valores são muito próximos. Já o gráfico em vermelho que representa o curso de Direito é um gráfico assimétrico e ao calcularmos os valores da média e mediana eles serão distintos, sendo mais indicado usar a mediana nesses casos, já que a ela sofre menos interferência de valores extremos. 
+
+
+
+
+
+
+
